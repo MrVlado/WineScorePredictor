@@ -1,6 +1,12 @@
-Wine classification
 
-DATASET -> Wine Quality Data Set(https://archive.ics.uci.edu/ml/datasets/Wine+Quality)
+TEAM:   Vlad Iosif & Marcel Transier
+PROJECT DATASET:Wine Quality Data Set(https://archive.ics.uci.edu/ml/datasets/Wine+Quality)
+PROJECT NAME: WineScorePredictor
+GIT REPOSITORY: https://github.com/MrVlado/WineScorePredictor.git
+
+
+
+
 
 Input variables (based on physicochemical tests):
 
@@ -25,7 +31,7 @@ A real number ranged in (0:10) that indicataes the quality
 
 
 
-TO DO
+SCHEDULED STEPS
 
 -PREPARE THE DATA & UNDERSTAND IT
     -Print the data(maybe use PCA reduction), and show of the outliers
