@@ -1,0 +1,37 @@
+Wine classification
+
+DATASET -> Wine Quality Data Set(https://archive.ics.uci.edu/ml/datasets/Wine+Quality)
+
+Input variables (based on physicochemical tests):
+
+1 - fixed acidity
+2 - volatile acidity
+3 - citric acid
+4 - residual sugar
+5 - chlorides
+6 - free sulfur dioxide
+7 - total sulfur dioxide
+8 - density
+9 - pH
+10 - sulphates
+11 - alcohol
+
+
+
+OUTPUT
+A real number ranged in (0:10) that indicataes the quality
+
+
+
+
+
+TO DO
+-Choose the alghoitms (Grid search k-fold cross validation for parameter selection will be applied for every alghoritm tested)
+    -SVM (with different kernels)
+        -POLY
+        -RADIAL
+        -SIGMOIDAL
+    - N 
+        
+
+-Normalize the dataset(every feature between 0:1) AT LEAST FOR SVM
