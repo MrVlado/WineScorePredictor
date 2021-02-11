@@ -26,12 +26,36 @@ A real number ranged in (0:10) that indicataes the quality
 
 
 TO DO
--Choose the alghoitms (Grid search k-fold cross validation for parameter selection will be applied for every alghoritm tested)
+
+-PREPARE THE DATA & UNDERSTAND IT
+    -Print the data(maybe use PCA reduction), and show of the outliers
+    -Looking for correlations with the features(Correlation Matrix)
+    -Studing the features of the samples in the dataset with linear regression to find positive or negative  correlations with the score(the          results has to be adequatly susitained by a small enought loss to be considered valuable)
+        -Intresting result in this phase can make us think about feature reduction
+        
+        
+    -Split in training and testing 70/30 (look for a balanced split based on the gaussian distributon of the Initail dataset)
+    -Use part of the training as a validation set(k-fold cross validation)
+    -Normalize the dataset(every feature between 0:1)
+
+-PREPARE THE MODEL
+
+-Choose the alghoitms 
     -SVM (with different kernels)
         -POLY
         -RADIAL
         -SIGMOIDAL
-    - N 
+    - NN (we can try different activation functions, and different layers setup)
         
+    - Perceptron Alghorithm
+    
+-TRAIN THE MODELS
+Grid search k-fold cross validation for parameter selection will be applied for every alghoritm tested
+    -Tune the hyperparameters of the model before the training using a gridsearch cross validation method.
+    -Once we found the best hyperparameters of the models we train on the entire training set and than we validate the result on the testing     set.
 
--Normalize the dataset(every feature between 0:1) AT LEAST FOR SVM
+-COMPARE THE RESULT OF THE DIFFERENT MODELS
+    -Compare the ROC curves and the AUC of the different methods
+    -See where one did good and other did bad
+    -Consider the option of marging the results of the different models in one singe decision rule.
+    
