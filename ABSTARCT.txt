@@ -36,7 +36,7 @@ SCHEDULED STEPS
 -PREPARE THE DATA & UNDERSTAND IT
     -Print the data(maybe use PCA reduction), and show of the outliers
     -Looking for correlations with the features(Correlation Matrix)
-    -Studing the features of the samples in the dataset with linear regression to find positive or negative  correlations with the score(the          results has to be adequatly susitained by a small enought loss to be considered valuable)
+    -Studing the features of the samples in the dataset with linear regression to find positive or negative  correlations with the score(the results has to be adequatly susitained by a small enought loss to be considered valuable)
         -Intresting result in this phase can make us think about feature reduction
         
         
