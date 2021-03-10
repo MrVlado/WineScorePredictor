@@ -27,8 +27,7 @@ def loadgrid(kernel, wine, nnpath=None):
     # gird_white_nn_layers_activation
     file_name = 'grid_' + wine + '_' + kernel + (nnpath != None and ('_' + nnpath) or "") + '.pkl'
     with open(file_name, 'rb') as f:
-        grid_search = pickle.load(f)
-    return gird_search
+        return pickle.load(f)
 
 def savegrid(kernel, wine, nnpath=None):
     file_name = 'grid_' + wine + '_' + kernel + (nnpath != None and ('_' + nnpath) or "") + '.pkl'
