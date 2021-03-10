@@ -1,6 +1,7 @@
 import pandas as pd
 import math
 import numpy as np
+import pickle
 
 
 def get_wine(kind):
@@ -20,3 +21,16 @@ def shuffle(df, seed):
 def split(df, trainshare):
     i = math.floor(df.shape[0] * trainshare)
     return df.iloc[i:], df.iloc[:i]
+
+def loadgrid(kernel, wine, nnpath=None):
+    # grid_red_poly.pkl
+    # gird_white_nn_layers_activation
+    file_name = 'grid_' + wine + '_' + kernel + (nnpath != None and ('_' + nnpath) or "") + '.pkl'
+    with open(file_name, 'rb') as f:
+        grid_search = pickle.load(f)
+    return gird_search
+
+def savegrid(kernel, wine, nnpath=None):
+    file_name = 'grid_' + wine + '_' + kernel + (nnpath != None and ('_' + nnpath) or "") + '.pkl'
+    with open(file_name, 'wb') as f:
+        pickle.dump(grid_search, f)
