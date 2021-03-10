@@ -20,7 +20,7 @@ def shuffle(df, seed):
 
 def split(df, trainshare):
     i = math.floor(df.shape[0] * trainshare)
-    return df.iloc[i:], df.iloc[:i]
+    return df.iloc[:i], df.iloc[i:]
 
 def loadgrid(kernel, wine, nnpath=None):
     # grid_red_poly.pkl
@@ -29,7 +29,7 @@ def loadgrid(kernel, wine, nnpath=None):
     with open(file_name, 'rb') as f:
         return pickle.load(f)
 
-def savegrid(kernel, wine, nnpath=None):
+def savegrid(grid_search, kernel, wine, nnpath=None):
     file_name = 'grid_' + wine + '_' + kernel + (nnpath != None and ('_' + nnpath) or "") + '.pkl'
     with open(file_name, 'wb') as f:
         pickle.dump(grid_search, f)
