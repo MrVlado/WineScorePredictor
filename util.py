@@ -2,9 +2,10 @@ import pandas as pd
 import math
 import numpy as np
 import pickle
+import nn
+import svm
 import sklearn
 import plotly.express as px
-
 
 def get_wine(kind):
     if kind not in ['red', 'white']:
@@ -22,7 +23,7 @@ def shuffle(df, seed):
 
 def split(df, trainshare):
     i = math.floor(df.shape[0] * trainshare)
-    return df.iloc[:i], df.iloc[i:]
+    return  df.iloc[:i], df.iloc[i:]
 
 def loadgrid(kernel, wine, nnpath=None):
     # grid_red_poly.pkl
@@ -36,6 +37,18 @@ def savegrid(grid_search, kernel, wine, nnpath=None):
     with open(file_name, 'wb') as f:
         pickle.dump(grid_search, f)
 
+def score(kernel, wine,nnpath = None):
+    grid_search = loadgrid(kernel,wine,nnpath)
+    model = grid_search.best_estimator_
+    if (kernel == 'nn') :
+        X_train, Y_train, X_test, Y_test = nn.prepare_data(get_wine(wine))
+    else :
+        X_train, Y_train, X_test, Y_test = svm.prepare_data(get_wine(wine))
+
+    Y_pred = model.predict(X_test)
+
+    return sklearn.metrics.mean_absolute_error(Y_test, Y_pred), model, np.sum(abs((Y_pred-Y_test))<0.5)/Y_pred.shape[0]
+    
 def pca2d(df, showloadings=False):
     pca = sklearn.decomposition.PCA(n_components=2)
     components = pca.fit_transform(df.iloc[:, :-1])

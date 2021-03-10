@@ -24,19 +24,35 @@ def prepare_data(df):
     ones = np.ones((X_test.shape[0], 1))
     X_test = np.hstack((X_test, ones))
 
-
-
     return X_train, Y_train, X_test, Y_test
 
 
-def grid_hidden_layers(grid_search, wine):
+def grid_search_layers(grid_search, wine):
+    min_1 = 2
+    min_2 = 0
+
+    delta_1 = 1
+    delta_2 = 1
+
+    max_1 = 51
+    max_2 = 51
+
+    tuples = []
+    for l1 in range(min_1, max_1, delta_1):
+        for l2 in range(min_2, max_2, delta_2):
+            if l2 == 0:
+                tuples.append((l1,))
+            else:
+                tuples.append((l1, l2))
+
+    layers_grid = [{'hidden_layer_sizes': tuples, 'activation': ['logistic', 'tanh', 'relu']}]
+
     mlp = MLPRegressor(max_iter=1000, alpha=1e-4, solver='adam',
                        tol=1e-4, random_state=999,
                        learning_rate_init=.1)
 
     if (grid_search == None):
-        grid_search = model_selection.GridSearchCV(mlp, layers_grid, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1,
-                                                   verbose=5)
+        grid_search = model_selection.GridSearchCV(mlp, layers_grid, return_train_score= True, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1, verbose=5)
     else:
         grid_search.set_params(**layers_grid)
     X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
@@ -44,9 +60,7 @@ def grid_hidden_layers(grid_search, wine):
     t0 = time()
 
     grid_search.fit(X_train, Y_train)
-    file_name = "grid_" + wine + "_NN_layers_activation" + ".pkl"
-    with open(file_name, 'wb') as f:  # Python 3: open(..., 'wb')
-        pickle.dump(grid_search, f)
+    u.savegrid(grid_search, 'nn', wine, 'activation_layers')
 
     print("done in %0.3fs" % (time() - t0))
     print()
@@ -58,23 +72,109 @@ def grid_hidden_layers(grid_search, wine):
     return grid_search
 
 
-min_1 = 2
-min_2 = 0
+def grid_search_alpha(prev_grid, wine):
+    mlp = MLPRegressor(**prev_grid.best_estimator_.get_params())
+    X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
 
-delta_1 = 1
-delta_2 = 1
+    alpha_grid = np.logspace(-5, -3, 1000)
 
-max_1 = 51
-max_2 = 51
+    params_grid = {'alpha': alpha_grid}
 
-tuples = []
-for l1 in range(min_1, max_1, delta_1):
-    for l2 in range(min_2, max_2, delta_2):
-        if l2 == 0:
-            tuples.append((l1,))
-        else:
-            tuples.append((l1, l2))
+    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score= True, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1,verbose=5)
+    t0 = time()
 
-layers_grid = [{'hidden_layer_sizes': tuples, 'activation': ['logistic', 'tanh', 'relu']}]
+    grid_search.fit(X_train, Y_train)
 
-grid_hidden_layers(None, "red")
+    u.savegrid(grid_search, "nn", wine, "alpha")
+    print("done in %0.3fs" % (time() - t0))
+    print()
+
+    print("Best score: %0.3f" % grid_search.best_score_)
+    print("Best parameters set:")
+    best_parameters = grid_search.best_estimator_.get_params()
+    print(best_parameters)
+    return grid_search
+
+def grid_search_batch_size(prev_grid,wine) :
+    mlp = MLPRegressor(**prev_grid.best_estimator_.get_params())
+    X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
+    params_grid = { 'batch_size' : np.linspace(1, X_train.shape[0], 1000, dtype=int)}
+    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score= True, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1, verbose=5)
+    t0 = time()
+
+    grid_search.fit(X_train, Y_train)
+
+    u.savegrid(grid_search, "nn", wine, "batch_size")
+    print("done in %0.3fs" % (time() - t0))
+    print()
+
+    print("Best score: %0.3f" % grid_search.best_score_)
+    print("Best parameters set:")
+    best_parameters = grid_search.best_estimator_.get_params()
+    print(best_parameters)
+    return grid_search
+
+def grid_search_lr(prev_grid,wine) :
+    prev_params = prev_grid.best_estimator_.get_params()
+    prev_params['max_iter'] = 10000
+    mlp = MLPRegressor(**prev_params)
+    X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
+    params_grid = {'learning_rate_init': np.logspace(-5, 0, 100)}
+    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score= True, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1,
+                                               verbose=5)
+    t0 = time()
+
+    grid_search.fit(X_train, Y_train)
+
+    u.savegrid(grid_search, "nn", wine, "lr")
+    print("done in %0.3fs" % (time() - t0))
+    print()
+
+    print("Best score: %0.3f" % grid_search.best_score_)
+    print("Best parameters set:")
+    best_parameters = grid_search.best_estimator_.get_params()
+    print(best_parameters)
+    return grid_search
+
+def grid_search_beta(prev_grid,wine) :
+    prev_params = prev_grid.best_estimator_.get_params()
+    prev_params['max_iter'] = 10000
+    mlp = MLPRegressor(**prev_params)
+    X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
+    params_grid = {'beta_1': np.linspace(0.2, 1, 50), 'beta_2': np.linspace(0.21,1,50)}
+    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score= True, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1,
+                                               verbose=5)
+    t0 = time()
+
+    grid_search.fit(X_train, Y_train)
+
+    u.savegrid(grid_search, "nn", wine, "beta")
+    print("done in %0.3fs" % (time() - t0))
+    print()
+
+    print("Best score: %0.3f" % grid_search.best_score_)
+    print("Best parameters set:")
+    best_parameters = grid_search.best_estimator_.get_params()
+    print(best_parameters)
+    return grid_search
+
+def grid_search_alpha_lr(params,wine) :
+
+    params_grid = {'alpha': np.logspace(-5, -3, 100),'learning_rate_init': np.linspace(0.1, 1, 10)}
+    mlp = MLPRegressor(**params)
+    X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
+    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score= True, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1,
+                                               verbose=1)
+    t0 = time()
+
+    grid_search.fit(X_train, Y_train)
+
+    u.savegrid(grid_search, "nn", wine, "alpha_lr")
+    print("done in %0.3fs" % (time() - t0))
+    print()
+
+    print("Best score: %0.3f" % grid_search.best_score_)
+    print("Best parameters set:")
+    best_parameters = grid_search.best_estimator_.get_params()
+    print(best_parameters)
+    return grid_search
