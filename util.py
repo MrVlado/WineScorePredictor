@@ -48,6 +48,24 @@ def score(kernel, wine,nnpath = None):
     Y_pred = model.predict(X_test)
 
     return sklearn.metrics.mean_absolute_error(Y_test, Y_pred), model, np.sum(abs((Y_pred-Y_test))<0.5)/Y_pred.shape[0]
+
+def rec(kernel, wine, nnpath=None):
+    grid_search = loadgrid(kernel,wine,nnpath)
+    model = grid_search.best_estimator_
+    if (kernel == 'nn') :
+        X_train, Y_train, X_test, Y_test = nn.prepare_data(get_wine(wine))
+    else :
+        X_train, Y_train, X_test, Y_test = svm.prepare_data(get_wine(wine))
+
+    Y_pred = model.predict(X_test)
+
+    def acc(i):
+        return np.sum(abs((Y_pred-Y_test))<i)/Y_pred.shape[0]
+
+    x = np.linspace(0, 2, 100)
+    y = [ acc(i) for i in x ]
+
+    return px.line(x=x, y=y)
     
 def pca2d(df, showloadings=False):
     pca = sklearn.decomposition.PCA(n_components=2)
