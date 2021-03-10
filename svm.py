@@ -33,7 +33,7 @@ def score(kernel, wine):
     params = grid_search.best_params_
     model = grid_search.best_estimator_
     # print(type(params['gamma']))
-    df = u.get_wine("red")
+    df = u.get_wine(wine)
     df = u.shuffle(df, 999)
     X, Y = u.xy(df)
 
