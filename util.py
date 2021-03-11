@@ -47,7 +47,8 @@ def score(kernel, wine,nnpath = None):
 
     Y_pred = model.predict(X_test)
 
-    return sklearn.metrics.mean_absolute_error(Y_test, Y_pred), model, np.sum(abs((Y_pred-Y_test))<0.5)/Y_pred.shape[0]
+    return sklearn.metrics.mean_absolute_error(Y_test, Y_pred), model, np.sum(abs((Y_pred-Y_test))<1)/Y_pred.shape[0]
+
 
 def rec(kernel, wine, nnpath=None):
     grid_search = loadgrid(kernel,wine,nnpath)

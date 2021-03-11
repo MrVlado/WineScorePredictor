@@ -28,31 +28,28 @@ def prepare_data(df):
 
 
 def grid_search_layers(grid_search, wine):
-    min_1 = 2
-    min_2 = 0
+    min_1 = 10
+    min_2 = 10
 
-    delta_1 = 1
-    delta_2 = 1
-
-    max_1 = 51
-    max_2 = 51
+    max_1 = 20
+    max_2 = 20
 
     tuples = []
-    for l1 in range(min_1, max_1, delta_1):
-        for l2 in range(min_2, max_2, delta_2):
+    for l1 in np.linspace(min_1, max_1, 10, dtype=int):
+        for l2 in np.linspace(min_2, max_2, 10, dtype=int):
             if l2 == 0:
                 tuples.append((l1,))
             else:
                 tuples.append((l1, l2))
 
-    layers_grid = [{'hidden_layer_sizes': tuples, 'activation': ['logistic', 'tanh', 'relu']}]
+    #layers_grid = [{'hidden_layer_sizes': tuples, 'activation': ['logistic', 'tanh', 'relu']}]
+    layers_grid = [{'hidden_layer_sizes': tuples, 'activation': ['relu']}]
 
-    mlp = MLPRegressor(max_iter=1000, alpha=1e-4, solver='adam',
-                       tol=1e-4, random_state=999,
-                       learning_rate_init=.1)
+    mlp = MLPRegressor(max_iter=10000, solver='adam', tol=1e-4, random_state=999)
 
     if (grid_search == None):
-        grid_search = model_selection.GridSearchCV(mlp, layers_grid, return_train_score= True, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1, verbose=5)
+        grid_search = model_selection.GridSearchCV(mlp, layers_grid, return_train_score=True, cv=5,
+                                                   scoring='neg_mean_absolute_error', n_jobs=-1, verbose=3)
     else:
         grid_search.set_params(**layers_grid)
     X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
@@ -76,11 +73,12 @@ def grid_search_alpha(prev_grid, wine):
     mlp = MLPRegressor(**prev_grid.best_estimator_.get_params())
     X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
 
-    alpha_grid = np.logspace(-5, -3, 1000)
+    alpha_grid = np.logspace(-5, -3, 100)
 
     params_grid = {'alpha': alpha_grid}
 
-    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score= True, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1,verbose=5)
+    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score=True, cv=5,
+                                               scoring='neg_mean_absolute_error', n_jobs=-1, verbose=5)
     t0 = time()
 
     grid_search.fit(X_train, Y_train)
@@ -95,11 +93,13 @@ def grid_search_alpha(prev_grid, wine):
     print(best_parameters)
     return grid_search
 
-def grid_search_batch_size(prev_grid,wine) :
+
+def grid_search_batch_size(prev_grid, wine):
     mlp = MLPRegressor(**prev_grid.best_estimator_.get_params())
     X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
-    params_grid = { 'batch_size' : np.linspace(1, X_train.shape[0], 1000, dtype=int)}
-    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score= True, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1, verbose=5)
+    params_grid = {'batch_size': np.linspace(1, X_train.shape[0], 200, dtype=int)}
+    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score=True, cv=5,
+                                               scoring='neg_mean_absolute_error', n_jobs=-1, verbose=5)
     t0 = time()
 
     grid_search.fit(X_train, Y_train)
@@ -114,13 +114,15 @@ def grid_search_batch_size(prev_grid,wine) :
     print(best_parameters)
     return grid_search
 
-def grid_search_lr(prev_grid,wine) :
+
+def grid_search_lr(prev_grid, wine):
     prev_params = prev_grid.best_estimator_.get_params()
     prev_params['max_iter'] = 10000
     mlp = MLPRegressor(**prev_params)
     X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
     params_grid = {'learning_rate_init': np.logspace(-5, 0, 100)}
-    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score= True, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1,
+    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score=True, cv=5,
+                                               scoring='neg_mean_absolute_error', n_jobs=-1,
                                                verbose=5)
     t0 = time()
 
@@ -136,13 +138,15 @@ def grid_search_lr(prev_grid,wine) :
     print(best_parameters)
     return grid_search
 
-def grid_search_beta(prev_grid,wine) :
+
+def grid_search_beta(prev_grid, wine):
     prev_params = prev_grid.best_estimator_.get_params()
     prev_params['max_iter'] = 10000
     mlp = MLPRegressor(**prev_params)
     X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
-    params_grid = {'beta_1': np.linspace(0.2, 1, 50), 'beta_2': np.linspace(0.21,1,50)}
-    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score= True, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1,
+    params_grid = {'beta_1': np.linspace(0.5, 0.9999999999, 20), 'beta_2': np.linspace(0.51, 0.99999999999, 20)}
+    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score=True, cv=5,
+                                               scoring='neg_mean_absolute_error', n_jobs=-1,
                                                verbose=5)
     t0 = time()
 
@@ -158,12 +162,13 @@ def grid_search_beta(prev_grid,wine) :
     print(best_parameters)
     return grid_search
 
-def grid_search_alpha_lr(params,wine) :
 
-    params_grid = {'alpha': np.logspace(-5, -3, 100),'learning_rate_init': np.linspace(0.1, 1, 10)}
+def grid_search_alpha_lr(params, wine):
+    params_grid = {'alpha': np.logspace(-5, -3, 100), 'learning_rate_init': np.linspace(0.1, 1, 10)}
     mlp = MLPRegressor(**params)
     X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
-    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score= True, cv=5, scoring='neg_mean_absolute_error', n_jobs=-1,
+    grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score=True, cv=5,
+                                               scoring='neg_mean_absolute_error', n_jobs=-1,
                                                verbose=1)
     t0 = time()
 
