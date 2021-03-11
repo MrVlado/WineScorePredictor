@@ -66,7 +66,8 @@ def rec(kernel, wine, nnpath=None):
     x = np.linspace(0, 2, 100)
     y = [ acc(i) for i in x ]
 
-    return px.line(x=x, y=y)
+    #return px.line(x=x, y=y)
+    return x, y
     
 def pca2d(df, showloadings=False):
     pca = sklearn.decomposition.PCA(n_components=2)
