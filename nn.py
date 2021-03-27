@@ -93,11 +93,34 @@ def grid_search_alpha(prev_grid, wine):
     print(best_parameters)
     return grid_search
 
+def grid_searh_NN(wine,model_setup,param_grid,max_epochs =1000,n_cores=-1,verbose=0) :
+    mlp = MLPRegressor(**model_setup)
+    mlp.set_params(max_iter=max_epochs)
+    X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
+
+    grid_search = model_selection.GridSearchCV(mlp, param_grid, return_train_score=True, cv=5,
+                                               scoring='neg_mean_absolute_error', n_jobs=n_cores, verbose=verbose)
+    t0 = time()
+
+    grid_search.fit(X_train, Y_train)
+    f_path = ""
+    for i in param_grid.keys() :
+        f_path += i + "_"
+    u.savegrid(grid_search, "nn", wine, f_path)
+    print("done in %0.3fs" % (time() - t0))
+    print()
+
+    print("Best score: %0.3f" % grid_search.best_score_)
+    print("Best parameters set:")
+    best_parameters = grid_search.best_estimator_.get_params()
+    print(best_parameters)
+    return grid_search
+
 
 def grid_search_batch_size(prev_grid, wine):
     mlp = MLPRegressor(**prev_grid.best_estimator_.get_params())
     X_train, Y_train, X_test, Y_test = prepare_data(u.get_wine(wine))
-    params_grid = {'batch_size': np.linspace(1, X_train.shape[0], 200, dtype=int)}
+    params_grid = {}
     grid_search = model_selection.GridSearchCV(mlp, params_grid, return_train_score=True, cv=5,
                                                scoring='neg_mean_absolute_error', n_jobs=-1, verbose=5)
     t0 = time()

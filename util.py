@@ -5,6 +5,7 @@ import pickle
 import nn
 import svm
 import sklearn
+from sklearn import decomposition
 import plotly.express as px
 
 def get_wine(kind):
@@ -37,7 +38,7 @@ def savegrid(grid_search, kernel, wine, nnpath=None):
     with open(file_name, 'wb') as f:
         pickle.dump(grid_search, f)
 
-def score(kernel, wine,nnpath = None):
+def score(kernel, wine,nnpath = None,T=1):
     grid_search = loadgrid(kernel,wine,nnpath)
     model = grid_search.best_estimator_
     if (kernel == 'nn') :
@@ -47,7 +48,7 @@ def score(kernel, wine,nnpath = None):
 
     Y_pred = model.predict(X_test)
 
-    return sklearn.metrics.mean_absolute_error(Y_test, Y_pred), model, np.sum(abs((Y_pred-Y_test))<1)/Y_pred.shape[0]
+    return sklearn.metrics.mean_absolute_error(Y_test, Y_pred), model, np.sum(abs((Y_pred-Y_test))<T)/Y_pred.shape[0]
 
 
 def rec(kernel, wine, nnpath=None):
@@ -69,11 +70,18 @@ def rec(kernel, wine, nnpath=None):
     #return px.line(x=x, y=y)
     return x, y
     
-def pca2d(df, showloadings=False):
-    pca = sklearn.decomposition.PCA(n_components=2)
-    components = pca.fit_transform(df.iloc[:, :-1])
+def pca2d(df, showloadings=False, norm= 'none'):
+    if (norm == 'z_score') :
+        df_norm = (df-df.mean())/df.std()
 
-    fig = px.scatter(components, x=0, y=1, color=df.quality, labels={
+    elif (norm == 'min_max') :
+        df_norm = (df-df.min())/(df.max()-df.min())
+    else :
+        df_norm = df
+    pca = sklearn.decomposition.PCA(n_components=2)
+    components = pca.fit_transform(df_norm.iloc[:, :-1])
+
+    fig = px.scatter(components, x=0, y=1, color=df_norm.quality, labels={
         '0': str(pca.explained_variance_ratio_[0]),
         '1': str(pca.explained_variance_ratio_[1]),
         'color': 'quality'
@@ -81,7 +89,7 @@ def pca2d(df, showloadings=False):
 
     if showloadings:
         loadings = pca.components_.T * np.sqrt(pca.explained_variance_) * 10
-        for i, feature in enumerate(df.columns[:-1]):
+        for i, feature in enumerate(df_norm.columns[:-1]):
             fig.add_shape(
                 type='line',
                 x0=0, y0=0,
@@ -96,9 +104,17 @@ def pca2d(df, showloadings=False):
                 yanchor="bottom",
                 text=feature,
             )
+
     return fig.show()
 
-def pcagrid(df, n_components=4):
+def pcagrid(df, n_components=4,norm= 'none'):
+    if (norm == 'z_score') :
+        df_norm = (df-df.mean())/df.std()
+    elif (norm == 'min_max') :
+        df_norm = (df-df.min())/(df.max()-df.min())
+    else :
+        df_norm = df
+        
     pca = sklearn.decomposition.PCA(n_components=n_components)
     components = pca.fit_transform(df.iloc[:, :-1])
     labels = {

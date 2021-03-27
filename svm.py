@@ -9,12 +9,6 @@ from matplotlib.colors import Normalize
 import numpy as np
 import pickle
 
-C_range = np.logspace(2, 7, 5)
-gamma_range = np.logspace(-9, 5, 15)
-
-
-# gamma_range = np.logspace(-7, 2, 10 )
-
 class MidpointNormalize(Normalize):
 
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
@@ -35,7 +29,7 @@ def batch_grid(kernel, wine):
         C_range = np.logspace(-1, 3, 5)
         gamma_range = np.logspace(-2, 2, 5)
         param_grid = [
-            {'C': C_range, 'gamma': gamma_range, 'kernel': ['poly'], 'degree': [ 3, 4, 5], 'coef0': [0, 1, 2, 3, 4]}]
+            {'C': C_range, 'gamma': gamma_range, 'kernel': ['poly'], 'degree': [ 4, 5,6], 'coef0': [0, 1, 2, 3, 4]}]
     elif (kernel == 'sigmoid'):
         C_range = np.logspace(3, 7, 5)
         gamma_range = np.logspace(-3, 1, 5)
@@ -44,8 +38,8 @@ def batch_grid(kernel, wine):
     df = u.get_wine(wine)
     X_tr_norm, Y_tr, X_te_norm, Y_te = prepare_data(df)
 
-    grid_search = model_selection.GridSearchCV(svm.SVR(epsilon=0.2, cache_size=3000, verbose=False, max_iter=100000),
-                                               param_grid, n_jobs=-1, verbose=2, scoring='neg_mean_absolute_error',return_train_score= True, cv=5)
+    grid_search = model_selection.GridSearchCV(svm.SVR(epsilon=0.2, verbose=False, max_iter=100000),
+                                               param_grid, n_jobs=2, verbose=2, scoring='neg_mean_absolute_error',return_train_score= True, cv=5)
 
     t0 = time()
 
@@ -62,32 +56,6 @@ def batch_grid(kernel, wine):
     return grid_search
 
 
-def main():
-    grid = batch_grid('poly', 'white')
-
-    scores = grid.cv_results_['mean_test_score'].reshape(len(C_range),
-                                                         len(gamma_range))
-
-    # Draw heatmap of the validation accuracy as a function of gamma and C
-    #
-    # The score are encoded as colors with the hot colormap which varies from dark
-    # red to bright yellow. As the most interesting scores are all located in the
-    # 0.92 to 0.97 range we use a custom normalizer to set the mid-point to 0.92 so
-    # as to make it easier to visualize the small variations of score values in the
-    # interesting range while not brutally collapsing all the low score values to
-    # the same color.
-
-    plt.figure(figsize=(8, 6))
-    plt.subplots_adjust(left=.2, right=0.95, bottom=0.15, top=0.95)
-    plt.imshow(scores, interpolation='nearest', cmap=plt.cm.hot,
-               norm=MidpointNormalize(vmin=-2, midpoint=-1))
-    plt.xlabel('gamma')
-    plt.ylabel('C')
-    plt.colorbar()
-    plt.xticks(np.arange(len(gamma_range)), gamma_range, rotation=45)
-    plt.yticks(np.arange(len(C_range)), C_range)
-    plt.title('Validation accuracy')
-    plt.show()
 
 def prepare_data(df) :
     df = u.shuffle(df, 999)
